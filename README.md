@@ -1,6 +1,6 @@
 # cart_demo (Django Beginner Friendly Cart)
 
-This project demonstrates a **session-based Add to Cart** system without JS or helpers.
+This project demonstrates a **session-based Add to Cart** 
 
 ## Features
 - Simple Product model (name, price)
@@ -9,25 +9,5 @@ This project demonstrates a **session-based Add to Cart** system without JS or h
 - Add products and see count increase
 - View Cart page with items and total
 
-## Setup
-1. Create virtual env and install Django:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # Windows: venv\Scripts\activate
-   pip install django
-   ```
 
-2. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
-
-3. Create products in admin or shell.
-
-4. Run server:
-   ```bash
-   python manage.py runserver
-   ```
-
-5. Open `http://127.0.0.1:8000/`
 
