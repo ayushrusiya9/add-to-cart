@@ -84,28 +84,34 @@ def payment(request):
 def payment_status(request):
     if request.method == "POST": 
         response = request.POST   # frontend se form-data aa raha hai (razorpay ka response)
-
+        print(response.get('razorpay_payment_id'))
         razorpay_data = {
-            'razorpay_order_id': response['razorpay_order_id'],
-            'razorpay_payment_id': response['razorpay_payment_id'],
-            'razorpay_signature': response['razorpay_signature']
+            'razorpay_order_id': response.get('razorpay_order_id'),
+            'razorpay_payment_id': response.get('razorpay_payment_id'),
+            'razorpay_signature': response.get('razorpay_signature')
         }
 
         # Razorpay client instance
-        client = razorpay.Client(auth=("rzp_test_pr99iascS1WRtU", "UTDIzPGwICnAssu3Q3lk7zUi"))
+        client = razorpay.Client(auth=("rzp_test_RNMrrOvCpxy6Gi", "0ZyX31W7ienxCwVA8KbgEVgd"))
+    try:
+        print("Verifying signature with:", razorpay_data)
+        # Signature verify karna
+        client.utility.verify_payment_signature(razorpay_data)  # ye sirf validate karta hai
 
-        try:
-            # Signature verify karna
-            status = client.utility.verify_payment_signature(razorpay_data)
+        # Agar signature sahi hai, ye code execute hoga
+        product = ProductCart.objects.get(order_id=razorpay_data['razorpay_order_id'])
+        product.razorpay_payment_id = razorpay_data['razorpay_payment_id']
+        product.paid = True
+        product.save()
+        
+        print("Payment saved successfully:", product.razorpay_payment_id)
+        return render(request, 'shop/success.html', {'status': True})
 
-            # Agar signature sahi hai to database me product update karna
-            product = Product.objects.get(order_id=response['razorpay_order_id'])
-            product.razorpay_payment_id = response['razorpay_payment_id']
-            product.paid = True
-            product.save()
-            
-            # Success page show karo
-            return render(request, 'shop/success.html', {'status': True})
-        except:
-            # Agar error aayi (signature galat ya koi aur issue)
-            return render(request, 'shop/success.html', {'status': False})
+    except razorpay.errors.SignatureVerificationError as e:
+        print("Signature verification failed:", e)
+    except ProductCart.DoesNotExist:
+        print("Order not found in ProductCart")
+    except Exception as e:
+        print("Unknown error:", repr(e))
+
+    return render(request, 'shop/success.html', {'status': False})
